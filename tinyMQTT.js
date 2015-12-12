@@ -1,30 +1,26 @@
 /*
  * tinyMQTT.js 
  * Stripped out MQTT module that does basic PUB/SUB
- * Minifies to 1363 bytes, intended for devices running Espruino, particularly the ESP8266
- * Ollie Phillips 2015, 
+ * Minifies to 1308 bytes, intended for devices running Espruino, particularly the ESP8266
+ * Ollie Phillips 2015
  * MIT License
 */
-
 var MQTT = function(server){
 	this.server = server;
+	mq = this;
 };
 
 MQTT.prototype.connect = function(){
-	var mq = this;
 	var onConnected = function() {
 		client.write(mq.mqttConnect(getSerial()));
 		mq.emit("connected");
 		client.on('data', function(data) {
-			var type = data.charCodeAt(0) >> 4;
-			if(type === 3) {
-				var msg;
+			if((data.charCodeAt(0) >> 4) === 3) {
 				var cmd = data.charCodeAt(0);
-				var rem_len = data.charCodeAt(1);
 				var var_len = data.charCodeAt(2) << 8 | data.charCodeAt(3);
-				msg = {
+				var msg = {
 					topic: data.substr(4, var_len),
-					message: data.substr(4+var_len, rem_len-var_len),
+					message: data.substr(4+var_len, (data.charCodeAt(1))-var_len),
 					dup: (cmd & 0b00001000) >> 3,
 					qos: (cmd & 0b00000110) >> 1,
 					retain: cmd & 0b00000001
@@ -49,7 +45,6 @@ MQTT.prototype.mqttPacket = function(cmd, variable, payload) {
 };	
 	
 MQTT.prototype.mqttConnect = function(id){
-	var mq = this;
 	return mq.mqttPacket(0b00010000, 
 		mq.mqttStr("MQTT")/*protocol name*/+
 		"\x04"/*protocol level*/+
@@ -58,14 +53,10 @@ MQTT.prototype.mqttConnect = function(id){
 };
 
 MQTT.prototype.subscribe = function(topic) {
-	var mq = this;
-	var cmd = 8 << 4 | 2;
-	var pid = String.fromCharCode(1<<8, 1&255);
-	mq.client.write(mq.mqttPacket(cmd, pid, this.mqttStr(topic)+String.fromCharCode(1)));
+	mq.client.write(mq.mqttPacket((8 << 4 | 2), String.fromCharCode(1<<8, 1&255), this.mqttStr(topic)+String.fromCharCode(1)));
 };	
 
-MQTT.prototype.publish = function(topic, data) {
-	var mq = this;	
+MQTT.prototype.publish = function(topic, data) {	
 	mq.client.write(mq.mqttPacket(0b00110001, mq.mqttStr(topic), data));
 	mq.emit("published");
 };
