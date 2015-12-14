@@ -1,33 +1,36 @@
 /*
  * tinyMQTT.js 
  * Stripped out MQTT module that does basic PUB/SUB
- * Minifies to 1308 bytes, intended for devices running Espruino, particularly the ESP8266
+ * Minifies to 1330 bytes, intended for devices running Espruino, particularly the ESP8266
  * Ollie Phillips 2015
  * MIT License
 */
+
 var MQTT = function(server){
 	this.server = server;
 	mq = this;
+};
+
+function onData(data) {
+	if((data.charCodeAt(0) >> 4) === 3) {
+		var cmd = data.charCodeAt(0);
+		var var_len = data.charCodeAt(2) << 8 | data.charCodeAt(3);
+		var msg = {
+			topic: data.substr(4, var_len),
+			message: data.substr(4+var_len, (data.charCodeAt(1))-var_len),
+			dup: (cmd & 0b00001000) >> 3,
+			qos: (cmd & 0b00000110) >> 1,
+			retain: cmd & 0b00000001
+		};
+		mq.emit('message', msg);
+	}
 };
 
 MQTT.prototype.connect = function(){
 	var onConnected = function() {
 		client.write(mq.mqttConnect(getSerial()));
 		mq.emit("connected");
-		client.on('data', function(data) {
-			if((data.charCodeAt(0) >> 4) === 3) {
-				var cmd = data.charCodeAt(0);
-				var var_len = data.charCodeAt(2) << 8 | data.charCodeAt(3);
-				var msg = {
-					topic: data.substr(4, var_len),
-					message: data.substr(4+var_len, (data.charCodeAt(1))-var_len),
-					dup: (cmd & 0b00001000) >> 3,
-					qos: (cmd & 0b00000110) >> 1,
-					retain: cmd & 0b00000001
-				};
-				mq.emit('message', msg);
-			}
-		});
+		client.on('data', onData.bind(mq));
 		client.on('end', function() {
  			mq.emit("disconnected");
 		});
