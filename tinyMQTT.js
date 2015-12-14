@@ -1,7 +1,7 @@
 /*
  * tinyMQTT.js 
  * Stripped out MQTT module that does basic PUB/SUB
- * Minifies to 1330 bytes, intended for devices running Espruino, particularly the ESP8266
+ * Minifies to 1254 bytes, intended for devices running Espruino, particularly the ESP8266
  * Ollie Phillips 2015
  * MIT License
 */
@@ -26,9 +26,25 @@ function onData(data) {
 	}
 };
 
+function mqttStr(str) {
+	return String.fromCharCode(str.length >> 8, str.length&255) + str;
+};
+
+function mqttPacket(cmd, variable, payload) {
+	return String.fromCharCode(cmd, variable.length+payload.length)+variable+payload;
+};
+
+function mqttConnect(id){
+	return mqttPacket(0b00010000, 
+		mqttStr("MQTT")/*protocol name*/+
+		"\x04"/*protocol level*/+
+		"\x00"/*connect flag*/+
+		"\xFF\xFF"/*Keepalive*/, mqttStr(id));
+};
+
 MQTT.prototype.connect = function(){
 	var onConnected = function() {
-		client.write(mq.mqttConnect(getSerial()));
+		client.write(mqttConnect(getSerial()));
 		mq.emit("connected");
 		client.on('data', onData.bind(mq));
 		client.on('end', function() {
@@ -39,33 +55,17 @@ MQTT.prototype.connect = function(){
 	mq.client = client;
 };
 
-MQTT.prototype.mqttStr = function(str) {
-	return String.fromCharCode(str.length >> 8, str.length&255) + str;
-};
-
-MQTT.prototype.mqttPacket = function(cmd, variable, payload) {
-	return String.fromCharCode(cmd, variable.length+payload.length)+variable+payload;
-};	
-	
-MQTT.prototype.mqttConnect = function(id){
-	return mq.mqttPacket(0b00010000, 
-		mq.mqttStr("MQTT")/*protocol name*/+
-		"\x04"/*protocol level*/+
-		"\x00"/*connect flag*/+
-		"\xFF\xFF"/*Keepalive*/, mq.mqttStr(id));
-};
-
 MQTT.prototype.subscribe = function(topic) {
-	mq.client.write(mq.mqttPacket((8 << 4 | 2), String.fromCharCode(1<<8, 1&255), this.mqttStr(topic)+String.fromCharCode(1)));
+	mq.client.write(mqttPacket((8 << 4 | 2), String.fromCharCode(1<<8, 1&255), mqttStr(topic)+String.fromCharCode(1)));
 };	
 
 MQTT.prototype.publish = function(topic, data) {	
-	mq.client.write(mq.mqttPacket(0b00110001, mq.mqttStr(topic), data));
+	mq.client.write(mqttPacket(0b00110001, mqttStr(topic), data));
 	mq.emit("published");
 };
 
 MQTT.prototype.disconnect = function(){
-	this.client.write(String.fromCharCode(14<<4)+"\x00");	
+	mq.client.write(String.fromCharCode(14<<4)+"\x00");	
 };
 
 // Exports
