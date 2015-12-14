@@ -1,8 +1,11 @@
 # tinyMQTT
 
-Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1308 bytes, intended for devices running Espruino, particularly the ESP8266.
+Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1254 bytes, intended for devices running Espruino, particularly the ESP8266.
 
-Add back whatever features you can get away with!
+Add back whatever features you can get away with!!
+
+## Credits
+Thanks to Gordon Williams (@gfwilliams) for several code optimization tips, that freed a further 36 jsvars and reduced file size a further 46 bytes.
 
 ## Example
 
