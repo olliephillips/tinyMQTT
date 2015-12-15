@@ -1,7 +1,7 @@
 /*
  * tinyMQTT.js 
  * Stripped out MQTT module that does basic PUB/SUB
- * Minifies to 1254 bytes, intended for devices running Espruino, particularly the ESP8266
+ * Minifies to 1229 bytes, intended for devices running Espruino, particularly the ESP8266
  * Ollie Phillips 2015
  * MIT License
 */
