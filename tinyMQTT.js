@@ -11,12 +11,14 @@ var MQTT = function(server, opts){
 	this.port = opts.port || 1883;
 	this.username = opts.username;
 	this.password = opts.password;	
+	this.connected = false;
+	this.emitter = true;
 	mq = this;
 };
 
 function onData(data) {
-	if((data.charCodeAt(0) >> 4) === 3) {
-		var cmd = data.charCodeAt(0);
+	var cmd = data.charCodeAt(0);
+	if((cmd >> 4) === 3) {
 		var var_len = data.charCodeAt(2) << 8 | data.charCodeAt(3);
 		var msg = {
 			topic: data.substr(4, var_len),
@@ -57,14 +59,19 @@ function mqttConnect(id){
 MQTT.prototype.connect = function(){
 	var onConnected = function() {
 		client.write(mqttConnect(getSerial()));
-		mq.emit("connected");
+		if(mq.emitter){mq.emit("connected");}
+		mq.connected = true;
 		client.on('data', onData.bind(mq));
 		client.on('end', function() {
  			mq.emit("disconnected");
+			mq.connected = false;
 		});
 	};
-	client = require("net").connect({host : mq.server, port: mq.port}, onConnected);
-	mq.client = client;
+	if(mq.client){mq.emitter = false;}
+	if(!mq.connected) {
+		client = require("net").connect({host : mq.server, port: mq.port}, onConnected);
+		mq.client = client;
+	}
 };
 
 MQTT.prototype.subscribe = function(topic) {
@@ -72,11 +79,13 @@ MQTT.prototype.subscribe = function(topic) {
 };	
 
 MQTT.prototype.publish = function(topic, data) {	
-	mq.client.write(mqttPacket(0b00110001, mqttStr(topic), data));
-	mq.emit("published");
+	if(mq.connected) {
+		mq.client.write(mqttPacket(0b00110001, mqttStr(topic), data));
+		mq.emit("published");
+	}
 };
 
-MQTT.prototype.disconnect = function(){
+MQTT.prototype.disconnect = function() {
 	mq.client.write(String.fromCharCode(14<<4)+"\x00");	
 };
 
