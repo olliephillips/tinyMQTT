@@ -1,13 +1,16 @@
 /*
  * tinyMQTT.js 
- * Stripped out MQTT module that does basic PUB/SUB
- * Intended for devices running Espruino, particularly the ESP8266
+ * Stripped out MQTT module that does basic PUBSUB
  * Ollie Phillips 2015
  * MIT License
 */
 
-var MQTT = function(server){
+var MQTT = function(server, opts){
+	var opts = opts || {};
 	this.server = server;
+	this.port = opts.port || 1883;
+	this.username = opts.username;
+	this.password = opts.password;	
 	mq = this;
 };
 
@@ -35,11 +38,20 @@ function mqttPacket(cmd, variable, payload) {
 };
 
 function mqttConnect(id){
+	// Authentication?
+	var flags = 0;
+	var payload = mqttStr(id);
+	if(mq.username && mq.password) { 
+		flags |= ( mq.username )? 0x80 : 0; 
+		flags |= ( mq.username && mq.password )? 0x40 : 0; 
+		payload += mqttStr(mq.username) + mqttStr(mq.password);
+	} 
+	flags = String.fromCharCode(parseInt(flags.toString(16), 16));
 	return mqttPacket(0b00010000, 
 		mqttStr("MQTT")/*protocol name*/+
 		"\x04"/*protocol level*/+
-		"\x00"/*connect flag*/+
-		"\xFF\xFF"/*Keepalive*/, mqttStr(id));
+		flags/*flags*/+
+		"\xFF\xFF"/*Keepalive*/, payload);
 };
 
 MQTT.prototype.connect = function(){
@@ -51,7 +63,7 @@ MQTT.prototype.connect = function(){
  			mq.emit("disconnected");
 		});
 	};
-	client = require("net").connect({host : mq.server, port: 1883}, onConnected);
+	client = require("net").connect({host : mq.server, port: mq.port}, onConnected);
 	mq.client = client;
 };
 
@@ -69,6 +81,6 @@ MQTT.prototype.disconnect = function(){
 };
 
 // Exports
-exports.create = function (server) {
-	return new MQTT(server);
+exports.create = function (server, options) {
+	return new MQTT(server, options);
 };
