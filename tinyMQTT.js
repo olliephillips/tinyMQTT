@@ -58,6 +58,7 @@ function mqttConnect(id){
 
 MQTT.prototype.connect = function(){
 	var onConnected = function() {
+		clearInterval(con);
 		client.write(mqttConnect(getSerial()));
 		if(mq.emitter){mq.emit("connected");}
 		mq.connected = true;
