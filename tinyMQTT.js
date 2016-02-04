@@ -58,6 +58,7 @@ function mqttConnect(id){
 
 MQTT.prototype.connect = function(){
 	var onConnected = function() {
+		clearInterval(con);
 		client.write(mqttConnect(getSerial()));
 		if(mq.emitter){mq.emit("connected");}
 		mq.connected = true;
@@ -68,10 +69,10 @@ MQTT.prototype.connect = function(){
 		});
 	};
 	if(mq.client){mq.emitter = false;}
-	if(!mq.connected) {
+	var con = setInterval(function(){
 		client = require("net").connect({host : mq.server, port: mq.port}, onConnected);
 		mq.client = client;
-	}
+	}, 5000);
 };
 
 MQTT.prototype.subscribe = function(topic) {
