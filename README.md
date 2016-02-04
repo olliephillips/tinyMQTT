@@ -1,12 +1,11 @@
 # tinyMQTT
 
-Branch: safereconnect. How best to make reconnection if dropped by MQTT broker. This branch should allow us to call ```mqtt.connect()``` again from within a "disconnected" event listener, with no duplicate listeners or increase memory use or leaks. 
+Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.58KB, intended for devices running Espruino, particularly the ESP8266. Supports authentication
 
-Also aim is make publishing safe and without memory leak by understanding connected/disconnected status of the broker publishing to.
+- Supports QoS 0 only.
+- Supports authentication on username and password.
 
-Ok based on limited testing.
-
-Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.4KB, intended for devices running Espruino, particularly the ESP8266. Supports authentication
+Some considerable effort has gone into ensuring safe reconnection in event of MQTT broker disconnecting us and or loss of network, minimising leaked memory and ensuring no duplicated event listeners, and subsequent processes. 
 
 ## Credits
 Thanks to Gordon Williams (@gfwilliams) for several code optimization tips, that freed a further 36 jsvars and reduced file size a further 46 bytes. Thanks to Thorsten von Eicken (@tve) for the notion of understanding "ready" status.
@@ -51,9 +50,19 @@ mqtt.on("disconnected", function(){
 	console.log("disconnected");
 });
 
-// This is ESP8266 specific, and may be subject to change
 var wifi = require("Wifi");
 wifi.connect("username", {password:"mypassword"},function(){
 	mqtt.connect();
 });
+```
+
+## Reconnection
+If you want to reconnect in event of broker disconnection or wifi outage add ```mqtt.connect();``` to the disconnected event listener. Reconnection will be attempted indefinitely at 5 second intervals. Once reconnected publishing should restart, and subscriptions will be honoured.
+
+```
+mqtt.on("disconnected", function(){
+	console.log("disconnected");
+	mqtt.connect();
+});
+
 ```
