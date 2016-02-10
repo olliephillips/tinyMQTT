@@ -12,7 +12,6 @@ var MQTT = function(server, opts){
 	this.username = opts.username;
 	this.password = opts.password;	
 	this.connected = false;
-	this.emitter = true;
 	mq = this;
 };
 
@@ -60,20 +59,20 @@ MQTT.prototype.connect = function(){
 	var onConnected = function() {
 		clearInterval(con);
 		client.write(mqttConnect(getSerial()));
-		if(mq.emitter){mq.emit("connected");}
+		mq.emit("connected");
 		mq.connected = true;
 		client.on('data', onData.bind(mq));
 		client.on('end', function() {
  			mq.emit("disconnected");
+			mq.removeAllListeners("connected");
 			mq.connected = false;
 		});
 	};
-	if(mq.client){mq.emitter = false;}
 	if(!mq.connected) {
 		var con = setInterval(function(){
 			client = require("net").connect({host : mq.server, port: mq.port}, onConnected);
 			mq.client = client;
-		}, 5000);
+		}, 2000);
 	}
 };
 
