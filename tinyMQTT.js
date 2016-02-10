@@ -61,8 +61,9 @@ MQTT.prototype.mqttConnect = function(id){
 
 MQTT.prototype.connect = function(){
 	var me=this;
-
+	console.log('mqttConnect called');
 	var onConnected = function() {
+		console.log('onConnected callback ->')
 
 		clearInterval(me.reconnectHandlerFunction);
 		me.reconnectHandlerFunction=null;
@@ -72,18 +73,24 @@ MQTT.prototype.connect = function(){
 		me.connected = true;
 		me.client.on('data', onData.bind(me));
 		me.client.on('end', function() {
- 			me.emit("disconnected");
+			me.removeAllListeners("connected"); // 1) Assuming implemented, valid in node
+			delete me.client;
 			me.connected = false;
+ 			me.emit("disconnected");
 		});
 	};
 
-	if(me.client){me.emitter = false;}
+//	if(me.client){me.emitter = false;}
+	console.log('connected function->');
+	console.log(me.connected);
+	console.log(me.reconnectHandlerFunction);
 
 	if(!me.connected && me.reconnectHandlerFunction===null) { // if it is not connected, and we dont started the reconnection Handler, then we start it first
 
 		me.client = require("net").connect({host : me.server, port: me.port}, onConnected);
-		
+
 		me.reconnectHandlerFunction = setInterval(function(){
+			console.log('trying to reconnect to mqtt');
 			me.client = require("net").connect({host : me.server, port: me.port}, onConnected);
 		}, 5000);
 	}
