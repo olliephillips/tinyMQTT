@@ -8,13 +8,12 @@
 
 var MQTT = function(server, opts){
 	var opts = opts || {};
-	this.server = server;
-	this.port = opts.port || 1883;
-	this.username = opts.username;
-	this.password = opts.password;
-	this.connected = false;
-	this.emitter = true;
-	this.reconnectHandlerFunction = null;
+	this.srv = server;
+	this.prt = opts.port || 1883;
+	this.usr = opts.username;
+	this.pwd = opts.password;
+	this.conn = false; // connected
+	this.rHF = null; // rHF
 };
 
 function onData(data) {
@@ -36,79 +35,72 @@ MQTT.prototype.mqttStr =function(str) {
 	return String.fromCharCode(str.length >> 8, str.length&255) + str;
 };
 
-MQTT.prototype.mqttPacket = function(cmd, variable, payload) {
+MQTT.prototype.mqttPkt = function(cmd, variable, payload) {
 	return String.fromCharCode(cmd, variable.length+payload.length)+variable+payload;
 };
 
-MQTT.prototype.mqttConnect = function(id){
+MQTT.prototype.mqttConn = function(id){
 
 	// Authentication?
-	var flags = 0;
+	var flg = 0; // flags
 	var payload = this.mqttStr(id);
 
-	if(this.username && this.password) {
-		flags |= ( this.username )? 0x80 : 0;
-		flags |= ( this.username && this.password )? 0x40 : 0;
-		payload += this.mqttStr(this.username) + this.mqttStr(this.password);
+	if(this.usr && this.pwd) {
+		flg |= ( this.usr )? 0x80 : 0;
+		flg |= ( this.usr && this.pwd )? 0x40 : 0;
+		payload += this.mqttStr(this.usr) + this.mqttStr(this.pwd);
 	}
-	flags = String.fromCharCode(parseInt(flags.toString(16), 16));
-	return this.mqttPacket(0b00010000,
+	flg = String.fromCharCode(parseInt(flg.toString(16), 16));
+	return this.mqttPkt(0b00010000,
 		this.mqttStr("MQTT")/*protocol name*/+
 		"\x04"/*protocol level*/+
-		flags/*flags*/+
+		flg/*flags*/+
 		"\xFF\xFF"/*Keepalive*/, payload);
 };
 
 MQTT.prototype.connect = function(){
 	var me=this;
-	console.log('mqttConnect called');
-	var onConnected = function() {
-		console.log('onConnected callback ->')
 
-		clearInterval(me.reconnectHandlerFunction);
-		me.reconnectHandlerFunction=null;
+	var onConn = function() { // on connected
 
-		me.client.write(me.mqttConnect(getSerial()));
-		if(me.emitter){ me.emit("connected");}
-		me.connected = true;
-		me.client.on('data', onData.bind(me));
-		me.client.on('end', function() {
+		clearInterval(me.rHF);
+		me.rHF=null;
+
+		me.cli.write(me.mqttConn(getSerial()));
+		me.emit("connected");
+		me.conn = true;
+		me.cli.on('data', onData.bind(me));
+		me.cli.on('end', function() {
 			me.removeAllListeners("connected"); // 1) Assuming implemented, valid in node
-			delete me.client;
-			me.connected = false;
+			delete me.cli;
+			me.conn = false;
  			me.emit("disconnected");
 		});
 	};
 
-//	if(me.client){me.emitter = false;}
-	console.log('connected function->');
-	console.log(me.connected);
-	console.log(me.reconnectHandlerFunction);
+	if(!me.conn && me.rHF===null) { // if it is not connected, and we dont started the reconnection Handler, then we start it first
 
-	if(!me.connected && me.reconnectHandlerFunction===null) { // if it is not connected, and we dont started the reconnection Handler, then we start it first
+//		me.cli = require("net").connect({host : me.srv, port: me.prt}, onConn);
 
-		me.client = require("net").connect({host : me.server, port: me.port}, onConnected);
-
-		me.reconnectHandlerFunction = setInterval(function(){
-			console.log('trying to reconnect to mqtt');
-			me.client = require("net").connect({host : me.server, port: me.port}, onConnected);
-		}, 5000);
+		me.rHF = setInterval(function(){
+			me.cli = require("net").connect({host : me.srv, port: me.prt}, onConn);
+		}, 1000);
 	}
 };
 
 MQTT.prototype.subscribe = function(topic) {
-	this.client.write(this.mqttPacket((8 << 4 | 2), String.fromCharCode(1<<8, 1&255), this.mqttStr(topic)+String.fromCharCode(1)));
+	this.cli.write(this.mqttPkt((8 << 4 | 2), String.fromCharCode(1<<8, 1&255), this.mqttStr(topic)+String.fromCharCode(1)));
 };
 
 MQTT.prototype.publish = function(topic, data) {
-	if(this.connected) {
-		this.client.write(this.mqttPacket(0b00110001, this.mqttStr(topic), data));
+	if(this.conn) {
+		this.cli.write(this.mqttPkt(0b00110001, this.mqttStr(topic), data));
 		this.emit("published");
 	}
 };
 
 MQTT.prototype.disconnect = function() {
-	this.client.write(String.fromCharCode(14<<4)+"\x00");
+	this.cli.write(String.fromCharCode(14<<4)+"\x00");
 };
 
 // Exports
