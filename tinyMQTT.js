@@ -1,19 +1,19 @@
 /*
- * tinyMQTT.js 
+ * tinyMQTT.js
  * Stripped out MQTT module that does basic PUBSUB
  * Ollie Phillips 2015
+ * improved by HyGy
  * MIT License
 */
 
 var MQTT = function(server, opts){
 	var opts = opts || {};
-	this.server = server;
-	this.port = opts.port || 1883;
-	this.username = opts.username;
-	this.password = opts.password;	
-	this.connected = false;
-	this.emitter = true;
-	mq = this;
+	this.srv = server;
+	this.prt = opts.port || 1883;
+	this.usr = opts.username;
+	this.pwd = opts.password;
+	this.conn = false; // connected
+	this.rHF = null; // rHF
 };
 
 function onData(data) {
@@ -27,69 +27,80 @@ function onData(data) {
 			qos: (cmd & 0b00000110) >> 1,
 			retain: cmd & 0b00000001
 		};
-		mq.emit('message', msg);
+		this.emit('message', msg);
 	}
 };
 
-function mqttStr(str) {
+MQTT.prototype.mqttStr =function(str) {
 	return String.fromCharCode(str.length >> 8, str.length&255) + str;
 };
 
-function mqttPacket(cmd, variable, payload) {
+MQTT.prototype.mqttPkt = function(cmd, variable, payload) {
 	return String.fromCharCode(cmd, variable.length+payload.length)+variable+payload;
 };
 
-function mqttConnect(id){
+MQTT.prototype.mqttConn = function(id){
+
 	// Authentication?
-	var flags = 0;
-	var payload = mqttStr(id);
-	if(mq.username && mq.password) { 
-		flags |= ( mq.username )? 0x80 : 0; 
-		flags |= ( mq.username && mq.password )? 0x40 : 0; 
-		payload += mqttStr(mq.username) + mqttStr(mq.password);
-	} 
-	flags = String.fromCharCode(parseInt(flags.toString(16), 16));
-	return mqttPacket(0b00010000, 
-		mqttStr("MQTT")/*protocol name*/+
+	var flg = 0; // flags
+	var payload = this.mqttStr(id);
+
+	if(this.usr && this.pwd) {
+		flg |= ( this.usr )? 0x80 : 0;
+		flg |= ( this.usr && this.pwd )? 0x40 : 0;
+		payload += this.mqttStr(this.usr) + this.mqttStr(this.pwd);
+	}
+	flg = String.fromCharCode(parseInt(flg.toString(16), 16));
+	return this.mqttPkt(0b00010000,
+		this.mqttStr("MQTT")/*protocol name*/+
 		"\x04"/*protocol level*/+
-		flags/*flags*/+
+		flg/*flags*/+
 		"\xFF\xFF"/*Keepalive*/, payload);
 };
 
 MQTT.prototype.connect = function(){
-	var onConnected = function() {
-		clearInterval(con);
-		client.write(mqttConnect(getSerial()));
-		if(mq.emitter){mq.emit("connected");}
-		mq.connected = true;
-		client.on('data', onData.bind(mq));
-		client.on('end', function() {
- 			mq.emit("disconnected");
-			mq.connected = false;
+	var me=this;
+
+	var onConn = function() { // on connected
+
+		clearInterval(me.rHF);
+		me.rHF=null;
+
+		me.cli.write(me.mqttConn(getSerial()));
+		me.emit("connected");
+		me.conn = true;
+		me.cli.on('data', onData.bind(me));
+		me.cli.on('end', function() {
+			me.removeAllListeners("connected"); // 1) Assuming implemented, valid in node
+			delete me.cli;
+			me.conn = false;
+ 			me.emit("disconnected");
 		});
 	};
-	if(mq.client){mq.emitter = false;}
-	if(!mq.connected) {
-		var con = setInterval(function(){
-			client = require("net").connect({host : mq.server, port: mq.port}, onConnected);
-			mq.client = client;
-		}, 5000);
+
+	if(!me.conn && me.rHF===null) { // if it is not connected, and we dont started the reconnection Handler, then we start it first
+
+//		me.cli = require("net").connect({host : me.srv, port: me.prt}, onConn);
+
+		me.rHF = setInterval(function(){
+			me.cli = require("net").connect({host : me.srv, port: me.prt}, onConn);
+		}, 1000);
 	}
 };
 
 MQTT.prototype.subscribe = function(topic) {
-	mq.client.write(mqttPacket((8 << 4 | 2), String.fromCharCode(1<<8, 1&255), mqttStr(topic)+String.fromCharCode(1)));
-};	
+	this.cli.write(this.mqttPkt((8 << 4 | 2), String.fromCharCode(1<<8, 1&255), this.mqttStr(topic)+String.fromCharCode(1)));
+};
 
-MQTT.prototype.publish = function(topic, data) {	
-	if(mq.connected) {
-		mq.client.write(mqttPacket(0b00110001, mqttStr(topic), data));
-		mq.emit("published");
+MQTT.prototype.publish = function(topic, data) {
+	if(this.conn) {
+		this.cli.write(this.mqttPkt(0b00110001, this.mqttStr(topic), data));
+		this.emit("published");
 	}
 };
 
 MQTT.prototype.disconnect = function() {
-	mq.client.write(String.fromCharCode(14<<4)+"\x00");	
+	this.cli.write(String.fromCharCode(14<<4)+"\x00");
 };
 
 // Exports
