@@ -47,7 +47,7 @@ function mqCon(id){
 	} 
 	flags = sFCC(parseInt(flags.toString(16), 16));
 	return mqPkt(0b00010000, 
-		mqStr("TMQ")/*protocol name*/+
+		mqStr("MQTT")/*protocol name*/+
 		"\x04"/*protocol level*/+
 		flags/*flags*/+
 		"\xFF\xFF"/*Keepalive*/, payload);
@@ -59,7 +59,7 @@ TMQ.prototype.connect = function(){
 		_q.cl.write(mqCon(getSerial()));
 		_q.emit("connected");
 		_q.cn = true;
-		_q.cl.on('data', onDat.bind(mq));
+		_q.cl.on('data', onDat.bind(_q));
 		_q.cl.on('end', function() {
  			_q.emit("disconnected");
 			_q.removeAllListeners("connected");
