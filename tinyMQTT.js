@@ -62,9 +62,9 @@ TMQ.prototype.connect = function(){
 		_q.cl.on('data', onDat.bind(_q));
 		_q.cl.on('end', function() {
  			_q.emit("disconnected");
-			_q.removeAllListeners("connected");
 			_q.cn = _q.cl = null;
 		});
+		_q.removeAllListeners("connected");
 	};
 	if(!_q.cn) {
 		var con = setInterval(function(){
