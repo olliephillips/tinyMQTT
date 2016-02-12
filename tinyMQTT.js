@@ -5,18 +5,18 @@
  * MIT License
 */
 
-var MQTT = function(server, optns){
+var TMQ = function(server, optns){
 	var opts = optns || {};
-	this.server = server;
-	this.port = opts.port || 1883;
+	this.svr = server;
+	this.prt = opts.port || 1883;
 	this.usr = opts.username;
 	this.pwd = opts.password;	
-	mq = this;
+	_q = this;
 };
 
 var sFCC = String.fromCharCode;
 
-function onData(data) {
+function onDat(data) {
 	var cmd = data.charCodeAt(0);
 	if((cmd >> 4) === 3) {
 		var var_len = data.charCodeAt(2) << 8 | data.charCodeAt(3);
@@ -24,73 +24,71 @@ function onData(data) {
 			topic: data.substr(4, var_len),
 			message: data.substr(4+var_len, (data.charCodeAt(1))-var_len)
 		};
-		mq.emit('message', msg);
+		_q.emit('message', msg);
 	}
 };
 
-function mqttStr(str) {
+function mqStr(str) {
 	return sFCC(str.length >> 8, str.length&255) + str;
 };
 
-function mqttPacket(cmd, variable, payload) {
-	return sFCC(cmd, variable.length+payload.length)+variable+payload;
+function mqPkt(cmd, variable, payload) {
+	return sFCC(cmd, variable.length + payload.length) + variable + payload;
 };
 
-function mqttConnect(id){
+function mqCon(id){
 	// Authentication?
 	var flags = 0;
-	var payload = mqttStr(id);
-	if(mq.usr && mq.pwd) { 
-		flags |= ( mq.usr )? 0x80 : 0; 
-		flags |= ( mq.usr && mq.pwd )? 0x40 : 0; 
-		payload += mqttStr(mq.usr) + mqttStr(mq.pwd);
+	var payload = mqStr(id);
+	if(_q.usr && _q.pwd) { 
+		flags |= ( _q.usr )? 0x80 : 0; 
+		flags |= ( _q.usr && _q.pwd )? 0x40 : 0; 
+		payload += mqStr(_q.usr) + mqStr(_q.pwd);
 	} 
 	flags = sFCC(parseInt(flags.toString(16), 16));
-	return mqttPacket(0b00010000, 
-		mqttStr("MQTT")/*protocol name*/+
+	return mqPkt(0b00010000, 
+		mqStr("TMQ")/*protocol name*/+
 		"\x04"/*protocol level*/+
 		flags/*flags*/+
 		"\xFF\xFF"/*Keepalive*/, payload);
 };
 
-MQTT.prototype.connect = function(){
+TMQ.prototype.connect = function(){
 	var onConnected = function() {
 		clearInterval(con);
-		client.write(mqttConnect(getSerial()));
-		mq.emit("connected");
-		mq.con = true;
-		client.on('data', onData.bind(mq));
-		client.on('end', function() {
- 			mq.emit("disconnected");
-			mq.removeAllListeners("connected");
-			client = mq.client = null;
-			mq.con = false;
+		_q.cl.write(mqCon(getSerial()));
+		_q.emit("connected");
+		_q.cn = true;
+		_q.cl.on('data', onDat.bind(mq));
+		_q.cl.on('end', function() {
+ 			_q.emit("disconnected");
+			_q.removeAllListeners("connected");
+			_q.cn = _q.cl = null;
 		});
 	};
-	if(!mq.con) {
+	if(!_q.cn) {
 		var con = setInterval(function(){
-			client = require("net").connect({host : mq.server, port: mq.port}, onConnected);
-			mq.client = client;
+			_q.cl = require("net").connect({host : _q.svr, port: _q.prt}, onConnected);
 		}, 2000);
 	}
 };
 
-MQTT.prototype.subscribe = function(topic) {
-	mq.client.write(mqttPacket((8 << 4 | 2), sFCC(1<<8, 1&255), mqttStr(topic)+sFCC(1)));
+TMQ.prototype.subscribe = function(topic) {
+	_q.cl.write(mqPkt((8 << 4 | 2), sFCC(1<<8, 1&255), mqStr(topic)+sFCC(1)));
 };	
 
-MQTT.prototype.publish = function(topic, data) {	
-	if(mq.con) {
-		mq.client.write(mqttPacket(0b00110001, mqttStr(topic), data));
-		mq.emit("published");
+TMQ.prototype.publish = function(topic, data) {	
+	if(_q.cn) {
+		_q.cl.write(mqPkt(0b00110001, mqStr(topic), data));
+		_q.emit("published");
 	}
 };
 
-MQTT.prototype.disconnect = function() {
-	mq.client.write(sFCC(14<<4)+"\x00");	
+TMQ.prototype.disconnect = function() {
+	_q.cl.write(sFCC(14<<4)+"\x00");	
 };
 
 // Exports
-exports.create = function (server, options) {
-	return new MQTT(server, options);
+exports.create = function (svr, opts) {
+	return new TMQ(svr, opts);
 };
