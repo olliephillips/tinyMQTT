@@ -7,6 +7,8 @@ Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.3KB, 
 
 Some considerable effort has gone into ensuring safe reconnection in event of MQTT broker disconnecting us and or loss of network, minimising leaked memory and ensuring no duplicated event listeners, and subsequent processes.
 
+Please note. tinyMQTT library defines a single variable in the global namespace. In tests this has proven the best way to keep a compact code base (aka tiny). Variable is "_q".
+
 ## How to use
 ### No config options
 
@@ -65,4 +67,4 @@ mqtt.on("disconnected", function(){
 ```
 
 ## Credits
-@gfwilliams, @tve, @HyGy, @MaBecker. Thanks for the advice, tips and patience!
+@gfwilliams, @tve, @HyGy, @MaBecker. Thanks for the advice, tips, testing and patience!
