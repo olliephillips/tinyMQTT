@@ -7,9 +7,15 @@ Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.3KB, 
 
 Some considerable effort has gone into ensuring safe reconnection in event of MQTT broker disconnecting us and or loss of network, minimising leaked memory and ensuring no duplicated event listeners, and subsequent processes.
 
-Please note. tinyMQTT library defines a single variable in the global namespace. In tests this has proven the best way to keep a compact code base (aka tiny). Variable is "_q".
+Please note. tinyMQTT library defines a single variable in the global namespace. In tests this has proven the best way to keep a compact code base. Variable is "_q".
 
 ## How to use
+Using the Espruino Web IDE you can either download and use as a local module or require the file directly from this Github respository. For example, this works:
+
+```
+var mqtt = require("https://github.com/olliephillips/tinyMQTT/blob/test/tinyMQTT.min.js");
+```
+
 ### No config options
 
 ```
@@ -56,7 +62,7 @@ wifi.connect("username", {password:"mypassword"},function(){
 ```
 
 ## Reconnection
-If you want to reconnect in event of broker disconnection or wifi outage add ```mqtt.connect();``` to the disconnected event listener. Reconnection will be attempted indefinitely at 5 second intervals. Once reconnected publishing should restart, and subscriptions will be honoured.
+If you want to reconnect in event of broker disconnection or wifi outage add ```mqtt.connect();``` to the disconnected event listener. Reconnection will be attempted indefinitely at 2 second intervals. Once reconnected publishing should restart, and subscriptions will be honoured.
 
 ```
 mqtt.on("disconnected", function(){
