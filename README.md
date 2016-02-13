@@ -13,7 +13,7 @@ Please note. tinyMQTT library defines a single variable in the global namespace.
 Using the Espruino Web IDE you can either download and use as a local module or require the file directly from this Github respository. For example, this works:
 
 ```
-var mqtt = require("https://github.com/olliephillips/tinyMQTT/blob/test/tinyMQTT.min.js");
+var mqtt = require("https://github.com/olliephillips/tinyMQTT/blob/master/tinyMQTT.min.js");
 ```
 
 ### No config options
