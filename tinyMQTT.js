@@ -10,7 +10,8 @@ var TMQ = function(server, optns){
 	this.svr = server;
 	this.prt = opts.port || 1883;
 	this.usr = opts.username;
-	this.pwd = opts.password;	
+	this.pwd = opts.password;
+	this.cn = false;
 	_q = this;
 };
 
@@ -62,7 +63,8 @@ TMQ.prototype.connect = function(){
 		_q.cl.on('data', onDat.bind(_q));
 		_q.cl.on('end', function() {
  			_q.emit("disconnected");
-			_q.cn = _q.cl = null;
+			_q.cn = false;
+			delete _q.cl;
 		});
 		_q.removeAllListeners("connected");
 	};
