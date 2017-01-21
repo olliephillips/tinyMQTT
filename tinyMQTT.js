@@ -9,6 +9,7 @@ var TMQ = function(server, optns){
 	var opts = optns || {};
 	this.svr = server;
 	this.prt = opts.port || 1883;
+	this.ka = opts.keep_alive || 60;
 	this.usr = opts.username;
 	this.pwd = opts.password;
 	this.cn = false;
@@ -60,6 +61,9 @@ TMQ.prototype.connect = function(){
 		_q.cl.write(mqCon(getSerial()));
 		_q.emit("connected");
 		_q.cn = true;
+		setInterval(function(){
+			_q.cl.write(sFCC(12<<4)+"\x00");
+		}, _q.ka<<10);
 		_q.cl.on('data', onDat.bind(_q));
 		_q.cl.on('end', function() {
  			_q.emit("disconnected");
