@@ -73,4 +73,4 @@ mqtt.on("disconnected", function(){
 ```
 
 ## Credits
-@gfwilliams, @tve, @HyGy, @MaBecker. Thanks for the advice, tips, testing and patience!
+@gfwilliams, @tve, @HyGy, @MaBecker,@gulfaraz. Thanks for the advice, tips, testing and pull requests!
