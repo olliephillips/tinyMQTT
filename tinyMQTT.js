@@ -62,11 +62,13 @@ TMQ.prototype.connect = function(){
 		_q.emit("connected");
 		_q.cn = true;
 		setInterval(function(){
-			_q.cl.write(sFCC(12<<4)+"\x00");
+			if(_q.cn)
+				_q.cl.write(sFCC(12<<4)+"\x00");
 		}, _q.ka<<10);
 		_q.cl.on('data', onDat.bind(_q));
 		_q.cl.on('end', function() {
- 			_q.emit("disconnected");
+			if(_q.cn)
+				_q.emit("disconnected");
 			_q.cn = false;
 			delete _q.cl;
 		});
@@ -74,6 +76,10 @@ TMQ.prototype.connect = function(){
 	};
 	if(!_q.cn) {
 		var con = setInterval(function(){
+			if(_q.cl) {
+				_q.cl.end();
+				delete _q.cl;
+			}
 			_q.cl = require("net").connect({host : _q.svr, port: _q.prt}, onConnected);
 		}, 2000);
 	}
