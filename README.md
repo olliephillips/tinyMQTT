@@ -4,6 +4,7 @@ Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.45KB,
 
 - Supports QoS 0 only.
 - Supports authentication on username and password.
+- 127 byte publishing length limit.
 
 Some considerable effort has gone into ensuring safe reconnection in event of MQTT broker disconnecting us and or loss of network, minimising leaked memory and ensuring no duplicated event listeners, and subsequent processes.
 
