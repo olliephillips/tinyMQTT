@@ -13,6 +13,7 @@ var TMQ = function(server, optns){
 	this.usr = opts.username;
 	this.pwd = opts.password;
 	this.cn = false;
+	this.ri = opts.reconnect_interval || 2000;
 	_q = this;
 };
 
@@ -81,7 +82,7 @@ TMQ.prototype.connect = function(){
 				delete _q.cl;
 			}
 			_q.cl = require("net").connect({host : _q.svr, port: _q.prt}, onConnected);
-		}, 2000);
+		}, _q.ri);
 	}
 };
 
