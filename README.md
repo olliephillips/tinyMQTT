@@ -63,7 +63,7 @@ wifi.connect("username", {password:"mypassword"},function(){
 ```
 
 ## Reconnection
-If you want to reconnect in event of broker disconnection or wifi outage add ```mqtt.connect();``` to the disconnected event listener. Reconnection will be attempted indefinitely at 2 second intervals. Once reconnected publishing should restart, and subscriptions will be honoured.
+If you want to reconnect in event of broker disconnection or wifi outage add ```mqtt.connect();``` to the disconnected event listener. Reconnection will be attempted indefinitely, by default at 2 second intervals (though this can be configured). Once reconnected publishing should restart, and subscriptions will be honoured.
 
 ```
 mqtt.on("disconnected", function(){
