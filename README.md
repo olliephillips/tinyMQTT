@@ -1,9 +1,10 @@
 # tinyMQTT
 
-Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.32KB, intended for devices running Espruino, particularly the ESP8266. 
+Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.48KB, intended for devices running Espruino, particularly the ESP8266. 
 
 - Supports QoS 0 only.
 - Supports authentication on username and password.
+- 127 byte publishing length limit.
 
 Some considerable effort has gone into ensuring safe reconnection in event of MQTT broker disconnecting us and or loss of network, minimising leaked memory and ensuring no duplicated event listeners, and subsequent processes.
 
@@ -62,7 +63,7 @@ wifi.connect("username", {password:"mypassword"},function(){
 ```
 
 ## Reconnection
-If you want to reconnect in event of broker disconnection or wifi outage add ```mqtt.connect();``` to the disconnected event listener. Reconnection will be attempted indefinitely at 2 second intervals. Once reconnected publishing should restart, and subscriptions will be honoured.
+If you want to reconnect in event of broker disconnection or wifi outage add ```mqtt.connect();``` to the disconnected event listener. Reconnection will be attempted indefinitely, by default at 2 second intervals (though this can be configured). Once reconnected publishing should restart, and subscriptions will be honoured.
 
 ```
 mqtt.on("disconnected", function(){
@@ -73,4 +74,4 @@ mqtt.on("disconnected", function(){
 ```
 
 ## Credits
-@gfwilliams, @tve, @HyGy, @MaBecker. Thanks for the advice, tips, testing and patience!
+@gfwilliams, @tve, @HyGy, @MaBecker, @gulfaraz, @The-Futur1st and @wanglingsong. Thanks for the advice, tips, testing and pull requests!
