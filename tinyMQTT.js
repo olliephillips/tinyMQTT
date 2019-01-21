@@ -30,7 +30,7 @@
 				topic: data.substr(4, var_len),
 				message: data.substr(4+var_len, (data.charCodeAt(1))-var_len)
 			};
-			_q.emit('message', msg);
+			_q.emit("message", msg);
 		}
 	};
 	
@@ -69,8 +69,8 @@
 				if(_q.cn)
 					_q.cl.write(sFCC(12<<4)+"\x00");
 			}, _q.ka<<10);
-			_q.cl.on('data', onDat.bind(_q));
-			_q.cl.on('end', function() {
+			_q.cl.on("data", onDat.bind(_q));
+			_q.cl.on("end", function() {
 				if(_q.cn)
 					_q.emit("disconnected");
 				_q.cn = false;
