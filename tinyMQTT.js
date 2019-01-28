@@ -64,7 +64,7 @@ TMQ.prototype.connect = function(){
 		_q.cn = true;
 		setInterval(function(){
 			if(_q.cn)
-				_q.cl.write(sFCC(12<<4)+"\x00");
+				_q.cl.write(sFCC(12<<4)+"\\x00");
 		}, _q.ka<<10);
 		_q.cl.on('data', onDat.bind(_q));
 		_q.cl.on('end', function() {
@@ -98,7 +98,7 @@ TMQ.prototype.publish = function(topic, data) {
 };
 
 TMQ.prototype.disconnect = function() {
-	_q.cl.write(sFCC(14<<4)+"\x00");	
+	_q.cl.write(sFCC(14<<4)+"\\x00");	
 };
 
 // Exports
