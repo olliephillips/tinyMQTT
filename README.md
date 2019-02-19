@@ -70,5 +70,19 @@ mqtt.on("disconnected", function(){
 
 ```
 
+## Save & load from Storage
+Espruino supports saving and loading modules directly to/from storage. tinyMQTT can be used in this way, which provides for further memory optimisation should it be needed.
+
+```
+// Save to Storage 
+
+var s = require('Storage');
+s.write('tinyMQTT' , "......put tinyMQTT.min.js code here.........");
+
+// Load directly from Storage
+
+var mqtt = require('tinyMQTT');    
+```
+
 ## Credits
 @gfwilliams, @tve, @HyGy, @MaBecker, @gulfaraz, @The-Futur1st, @wanglingsong and @AkosLukacs. Thanks for the advice, tips, testing and pull requests!
