@@ -6,7 +6,7 @@
 */
 
 (function(){
-	
+
 	var _q;
 	var TMQ = function(server, optns){
 		var opts = optns || {};
@@ -19,9 +19,9 @@
 		this.ri = opts.reconnect_interval || 2000;
 		_q = this;
 	};
-	
+
 	var sFCC = String.fromCharCode;
-	
+
 	function onDat(data) {
 		var cmd = data.charCodeAt(0);
 		if((cmd >> 4) === 3) {
@@ -33,15 +33,15 @@
 			_q.emit("message", msg);
 		}
 	};
-	
+
 	function mqStr(str) {
 		return sFCC(str.length >> 8, str.length&255) + str;
 	};
-	
+
 	function mqPkt(cmd, variable, payload) {
 		return sFCC(cmd, variable.length + payload.length) + variable + payload;
 	};
-	
+
 	function mqCon(id){
 		// Authentication?
 		var flags = 0;
@@ -58,7 +58,7 @@
 			flags/*flags*/+
 			"\xFF\xFF"/*Keepalive*/, payload);
 	};
-	
+
 	TMQ.prototype.connect = function(){
 		var onConnected = function() {
 			clearInterval(con);
@@ -88,22 +88,23 @@
 			}, _q.ri);
 		}
 	};
-	
+
 	TMQ.prototype.subscribe = function(topic) {
 		_q.cl.write(mqPkt((8 << 4 | 2), sFCC(1<<8, 1&255), mqStr(topic)+sFCC(1)));
 	};
-	
+
 	TMQ.prototype.publish = function(topic, data) {
+		if((topic.length + data.length) > 127) { throw "Length of topic + data must not be more than 127 characters!"; }
 		if(_q.cn) {
 			_q.cl.write(mqPkt(0b00110001, mqStr(topic), data));
 			_q.emit("published");
 		}
 	};
-	
+
 	TMQ.prototype.disconnect = function() {
 		_q.cl.write(sFCC(14<<4)+"\\x00");
 	};
-	
+
 	// Exports
 	exports.create = function (svr, opts) {
 		return new TMQ(svr, opts);

@@ -1,10 +1,10 @@
 # tinyMQTT
 
-Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.37KB, intended for devices running Espruino, particularly the ESP8266. 
+Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.47KB, intended for devices running Espruino, particularly the ESP8266.
 
 - Supports QoS 0 only.
 - Supports authentication on username and password.
-- 127 byte publishing length limit.
+- 127 byte publishing length limit (the sum of the length of the topic + the length of the data must not be more than 127 characters).
 - Retain flag is set on published messages.
 
 ## How to use
