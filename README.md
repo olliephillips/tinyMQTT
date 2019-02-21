@@ -1,6 +1,6 @@
 # tinyMQTT
 
-Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.47KB, intended for devices running Espruino, particularly the ESP8266.
+Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.46KB, intended for devices running Espruino, particularly the ESP8266.
 
 - Supports QoS 0 only.
 - Supports authentication on username and password.
@@ -68,20 +68,6 @@ mqtt.on("disconnected", function(){
 	mqtt.connect();
 });
 
-```
-
-## Save & load from Storage
-Espruino supports saving and loading modules directly to/from storage. tinyMQTT can be used in this way, which provides for further memory optimisation should it be needed.
-
-```
-// Save to Storage 
-
-var s = require('Storage');
-s.write('tinyMQTT' , "......put tinyMQTT.min.js code here.........");
-
-// Load directly from Storage
-
-var mqtt = require('tinyMQTT');    
 ```
 
 ## Credits
