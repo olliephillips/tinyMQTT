@@ -32,15 +32,15 @@
 			};
 			_q.emit("message", msg);
 		}
-	};
+	}
 
 	function mqStr(str) {
 		return sFCC(str.length >> 8, str.length&255) + str;
-	};
+	}
 
 	function mqPkt(cmd, variable, payload) {
 		return sFCC(cmd, variable.length + payload.length) + variable + payload;
-	};
+	}
 
 	function mqCon(id){
 		// Authentication?
@@ -57,29 +57,30 @@
 			"\x04"/*protocol level*/+
 			flags/*flags*/+
 			"\xFF\xFF"/*Keepalive*/, payload);
-	};
+	}
 
 	TMQ.prototype.connect = function(){
 		var onConnected = function() {
-			clearInterval(con);
+			clearInterval(this.con);
+            this.con = null;
 			_q.cl.write(mqCon(getSerial()));
 			_q.emit("connected");
 			_q.cn = true;
-			setInterval(function(){
+			this.x1 = setInterval(function(){
 				if(_q.cn)
 					_q.cl.write(sFCC(12<<4)+"\x00");
 			}, _q.ka<<10);
 			_q.cl.on("data", onDat.bind(_q));
 			_q.cl.on("end", function() {
-				if(_q.cn)
-					_q.emit("disconnected");
+				if(_q.cn){ _q.emit("disconnected"); }
+                clearInterval(this.x1);
+                this.x1 = null;
 				_q.cn = false;
 				delete _q.cl;
 			});
-			_q.removeAllListeners("connected");
 		};
 		if(!_q.cn) {
-			var con = setInterval(function(){
+			this.con = setInterval(function(){
 				if(_q.cl) {
 					_q.cl.end();
 					delete _q.cl;
