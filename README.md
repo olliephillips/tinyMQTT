@@ -70,5 +70,8 @@ mqtt.on("disconnected", function(){
 
 ```
 
+## Too long message
+tinyMQTT only supports short messages. The length of the topic plus the length of the payload must be less than 128 characters. If it's longer, the library throws a `tMQTT-TL` exception.
+
 ## Credits
 @gfwilliams, @tve, @HyGy, @MaBecker, @gulfaraz, @The-Futur1st, @wanglingsong and @AkosLukacs. Thanks for the advice, tips, testing and pull requests!

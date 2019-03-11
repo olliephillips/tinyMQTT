@@ -59,33 +59,41 @@
 			"\xFF\xFF"/*Keepalive*/, payload);
 	}
 
+	TMQ.prototype._scktClosed = function(){
+		if (_q.con) {clearInterval(_q.con); _q.con = null;}
+		if (_q.x1) {clearInterval(_q.x1); _q.x1 = null;}
+		_q.cn = false;
+		delete _q.cl;
+		_q.emit("disconnected");
+	}
+
 	TMQ.prototype.connect = function(){
 		var onConnected = function() {
-			clearInterval(this.con);
-            this.con = null;
-			_q.cl.write(mqCon(getSerial()));
-			_q.emit("connected");
-			_q.cn = true;
-			this.x1 = setInterval(function(){
-				if(_q.cn)
-					_q.cl.write(sFCC(12<<4)+"\x00");
-			}, _q.ka<<10);
-			_q.cl.on("data", onDat.bind(_q));
-			_q.cl.on("end", function() {
-				if(_q.cn){ _q.emit("disconnected"); }
-                clearInterval(this.x1);
-                this.x1 = null;
-				_q.cn = false;
-				delete _q.cl;
-			});
+			if(_q.con){clearInterval(_q.con); _q.con = null;}
+			try{
+				_q.cl.write(mqCon(getSerial()));
+				_q.emit("connected");
+				_q.cn = true;
+				_q.x1 = setInterval(function(){
+					if(_q.cn)
+						_q.cl.write(sFCC(12<<4)+"\x00");
+				}, _q.ka<<10);
+				_q.cl.on("data", onDat.bind(_q));
+				_q.cl.on("end", _q._scktClosed);
+			}catch(e){_q._scktClosed();}
 		};
-		if(!_q.cn) {
-			this.con = setInterval(function(){
+		// Only try to connect, if there is no connection, or no pending connection
+		if(!(_q.cn || _q.con)){
+			_q.con = setInterval(function(){
 				if(_q.cl) {
 					_q.cl.end();
 					delete _q.cl;
 				}
-				_q.cl = require("net").connect({host : _q.svr, port: _q.prt}, onConnected);
+				try{
+					_q.cl = require("net").connect({host: _q.svr, port: _q.prt}, onConnected);
+				}catch(e){
+					_q._scktClosed();
+				}
 			}, _q.ri);
 		}
 	};
@@ -95,7 +103,7 @@
 	};
 
 	TMQ.prototype.publish = function(topic, data) {
-		if((topic.length + data.length) > 127) { throw "Length of topic + data must not be more than 127 characters!"; }
+		if((topic.length + data.length) > 127) {throw "tMQTT-TL";}
 		if(_q.cn) {
 			_q.cl.write(mqPkt(0b00110001, mqStr(topic), data));
 			_q.emit("published");
@@ -103,7 +111,13 @@
 	};
 
 	TMQ.prototype.disconnect = function() {
-		_q.cl.write(sFCC(14<<4)+"\x00");
+		if(_q.cn){
+			try{
+				_q.cl.write(sFCC(14<<4)+"\x00");
+			}catch(e){
+				_q._scktClosed();
+			}
+		}
 	};
 
 	// Exports
