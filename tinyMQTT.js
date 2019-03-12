@@ -76,7 +76,7 @@
 				_q.cn = true;
 				_q.x1 = setInterval(function(){
 					if(_q.cn)
-						_q.cl.write(sFCC(12<<4)+"\x00");
+						_q.cl.write(sFCC(12<<4)+sFCC(0));
 				}, _q.ka<<10);
 				_q.cl.on("data", onDat.bind(_q));
 				_q.cl.on("end", _q._scktClosed);
@@ -113,7 +113,7 @@
 	TMQ.prototype.disconnect = function() {
 		if(_q.cn){
 			try{
-				_q.cl.write(sFCC(14<<4)+"\x00");
+				_q.cl.write(sFCC(14<<4)+sFCC(0));
 			}catch(e){
 				_q._scktClosed();
 			}
