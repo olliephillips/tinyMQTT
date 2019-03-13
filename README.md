@@ -80,11 +80,11 @@ Espruino supports saving and loading modules directly to/from storage. tinyMQTT 
 // Save to Storage 
 
 var s = require('Storage');
-s.write('tinyMQTT' , "......put tinyMQTT.min.js code here.........");
+s.write('tinyMQTS' , '......put tinyMQTT.min.js code here.........');
 
 // Load directly from Storage
 
-var mqtt = require('tinyMQTT');    
+var mqtt = require('tinyMQTS');    
 ```
 
 ## Credits
