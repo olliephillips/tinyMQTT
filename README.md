@@ -8,11 +8,22 @@ Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.62KB,
 - Retain flag is set on published messages.
 
 ## How to use
-Using the Espruino Web IDE you can either download and use as a local module or require the file directly from this Github respository. For example, this works:
+
+tinyMQTT is now hosted on Espruino.com, so using the Espruino Web IDE it can be required as follows:
+
+```
+var mqtt = require("tinyMQTT");
+```
+
+The version of tinyMQTT on Espruino.com will always be a recent version, but may not always be the latest version, which is contained in this Github repository. 
+
+To get the latest version of tinyMQTT, you can require the file directly from this respository. For example, this works:
 
 ```
 var mqtt = require("https://github.com/olliephillips/tinyMQTT/blob/master/tinyMQTT.min.js");
 ```
+
+You can also download the file and use as a local module, which is ideal if you wish to modify the code or contribute to tinyMQTT development.
 
 ### No config options
 
@@ -60,6 +71,7 @@ wifi.connect("username", {password:"mypassword"},function(){
 ```
 
 ## Reconnection
+
 If you want to reconnect in event of broker disconnection or wifi outage add ```mqtt.connect();``` to the disconnected event listener. Reconnection will be attempted indefinitely, by default at 2 second intervals (though this can be configured). Once reconnected publishing should restart, and subscriptions will be honoured.
 
 ```
@@ -71,9 +83,11 @@ mqtt.on("disconnected", function(){
 ```
 
 ## Too long message
+
 tinyMQTT only supports short messages. The length of the topic plus the length of the payload must be less than 128 characters. If it's longer, the library throws a `tMQTT-TL` exception.
 
 ## Save & load from Storage
+
 Espruino supports saving and loading modules directly to/from storage. tinyMQTT can be used in this way, which provides for further memory optimisation should it be needed.
 
 ```
@@ -88,4 +102,5 @@ var mqtt = require('tinyMQTT');
 ```
 
 ## Credits
+
 @gfwilliams, @tve, @HyGy, @MaBecker, @gulfaraz, @The-Futur1st, @wanglingsong and @AkosLukacs. Thanks for the advice, tips, testing and pull requests!
