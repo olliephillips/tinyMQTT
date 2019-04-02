@@ -12,7 +12,7 @@ Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.62KB,
 tinyMQTT is now hosted on Espruino.com, so using the Espruino Web IDE it can be required as follows:
 
 ```
-var mqtt = require("tinyMQTT");
+var mqtt = require("tinyMQTT").create("<your mqtt broker>");
 ```
 
 The version of tinyMQTT on Espruino.com will always be a recent version, but may not always be the latest version, which is contained in this Github repository. 
@@ -20,7 +20,7 @@ The version of tinyMQTT on Espruino.com will always be a recent version, but may
 To get the latest version of tinyMQTT, you can require the file directly from this respository. For example, this works:
 
 ```
-var mqtt = require("https://github.com/olliephillips/tinyMQTT/blob/master/tinyMQTT.min.js");
+var mqtt = require("https://github.com/olliephillips/tinyMQTT/blob/master/tinyMQTT.min.js").create("<your mqtt broker>");
 ```
 
 You can also download the file and use as a local module, which is ideal if you wish to modify the code or contribute to tinyMQTT development.
