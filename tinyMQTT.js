@@ -53,9 +53,8 @@
 		}
 		return mqPkt(0b00010000,
 			mqStr("MQTT")/*protocol name*/+
-			"\x04"/*protocol level*/+
-			sFCC(flags)/*flags*/+
-			"\xFF\xFF"/*Keepalive*/, payload);
+			sFCC(4/*protocol level*/,flags,255,255/*Keepalive*/), 
+			payload);
 	}
 
 	TMQ.prototype._scktClosed = function(){
