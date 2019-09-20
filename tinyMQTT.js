@@ -97,7 +97,7 @@
 	};
 
 	TMQ.prototype.subscribe = function(topic) {
-		_q.cl.write(mqPkt((8 << 4 | 2), sFCC(1<<8, 1&255), mqStr(topic)+sFCC(1)));
+		_q.cl.write(mqPkt((8 << 4 | 2), sFCC(1<<8, 1&255), mqStr(topic)+sFCC(0)));
 	};
 
 	TMQ.prototype.publish = function(topic, data) {
