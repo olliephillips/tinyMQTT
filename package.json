@@ -1,0 +1,27 @@
+{
+  "name": "tinymqtt",
+  "version": "1.0.0",
+  "description": "Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.65KB, intended for devices running Espruino, particularly the ESP8266.",
+  "main": "tinyMQTT.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/olliephillips/tinyMQTT.git"
+  },
+  "keywords": [
+    "Espruino",
+    "MQTT",
+    "tinyMQTT",
+    "ESP8266",
+    "ESP32",
+    "IoT"
+  ],
+  "author": "olliephillips",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/olliephillips/tinyMQTT/issues"
+  },
+  "homepage": "https://github.com/olliephillips/tinyMQTT#readme"
+}
