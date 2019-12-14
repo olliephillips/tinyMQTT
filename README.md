@@ -103,4 +103,4 @@ var mqtt = require('tinyMQTS');
 
 ## Credits
 
-@gfwilliams, @tve, @HyGy, @MaBecker, @gulfaraz, @The-Futur1st, @wanglingsong, @AkosLukacs, @jejdacz, @cooltyn and @atmosuwiryo. Thanks for the advice, tips, testing and pull requests!
+@gfwilliams, @tve, @HyGy, @MaBecker, @gulfaraz, @The-Futur1st, @wanglingsong, @AkosLukacs, @jejdacz, @cooltyn, @atmosuwiryo and @iammikecohen. Thanks for the advice, tips, testing and pull requests!
