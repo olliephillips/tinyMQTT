@@ -1,5 +1,11 @@
 # tinyMQTT
 
+### THIS REPOSITORY IS ARCHIVED.
+
+The canonical fork and new maintainer can be found [here](https://github.com/MaBecker/tinyMQTT):
+
+https://github.com/MaBecker/tinyMQTT
+
 Stripped out JavaScript MQTT module that does basic PUB/SUB. Minifies to 1.65KB, intended for devices running Espruino, particularly the ESP8266.
 
 - Supports QoS 0 only.
